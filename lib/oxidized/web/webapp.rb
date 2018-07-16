@@ -76,20 +76,28 @@ module Oxidized
         out
       end
 
-      get '/node/fetch/:node' do
-        begin
-          node, @json = route_parse :node
-          @data = nodes.fetch node, nil
-        rescue NodeNotFound => error
-          @data = error.message
+      ['/node/fetch/:node', '/node/fetch/:node/:otype/:oname'].each do |path|
+        get path do
+          begin
+            node, @json = route_parse :node
+            @data = nodes.fetch node, nil, { output_type: params[:otype], output_name: params[:oname] }
+          rescue NodeNotFound => error
+            @data = error.message
+          end
+          out :text
         end
-        out :text
       end
 
-      get '/node/fetch/:group/:node' do
-        node, @json = route_parse :node
-        @data = nodes.fetch node, params[:group]
-        out :text
+      ['/node/fetch/:group/:node', '/node/fetch/:group/:node/:otype/:oname'].each do |path|
+        get path do
+          begin
+            node, @json = route_parse :node
+            @data = nodes.fetch node, params[:group], { output_type: params[:otype], output_name: params[:oname] }
+          rescue NodeNotFound => error
+            @data = error.message
+          end
+          out :text
+        end
       end
 
       get '/node/next/?:group?/:node' do
